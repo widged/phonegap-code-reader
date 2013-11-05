@@ -27,8 +27,6 @@ var app = {
     // `load`, `deviceready`, `offline`, and `online`.
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
-        document.getElementById('scan').addEventListener('click', this.scan, false);
-        document.getElementById('encode').addEventListener('click', this.encode, false);
     },
 
     // deviceready Event Handler
@@ -37,6 +35,7 @@ var app = {
     // function, we must explicity call `app.receivedEvent(...);`
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+
     },
 
     // Update DOM on a Received Event
@@ -48,48 +47,179 @@ var app = {
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
 
-        console.log('Received Event: ' + id);
+        var cbs = {
+            fault: onFault,
+            inform: onInform,
+            scanResult: onScanResult,
+            eventStored: onEventStored,
+            eventListChange: onEventListChanged
+        };
+
+        scanManager = this.ScanManagerClass().instance().callbacks(cbs);
+        document.getElementById('scan').addEventListener('click', scanManager.scan, false);
+        document.getElementById('export').addEventListener('click', scanManager.export, false);
+
+        function onFault(message) {
+            // alert(message);
+            onInform("[ERROR]" + message);
+        }
+        function onInform(message) {
+            document.getElementById("info").innerHTML = message;
+            console.log(message);
+        }
+
+         function onScanResult(result) {
+            var qr = result;
+            console.log(qr);
+            // alert(["We got a barcode","Result: " + qr.text,"Format: " + qr.format, "Cancelled: " + qr.cancelled].join("\n"));
+            onInform(qr.text);
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    onLocationResult(position.coords.latitude, position.coords.longitude);
+                },
+                function(err) {
+                    onFault("Couldn't load the location");
+                    onLocationResult("","");
+                }
+            );
+
+            function onLocationResult(latitude, longitude) {
+                var timestamp = Math.round((new Date()).getTime() / 1000); // unix timestamp, in seconds
+                scanManager.storeEvent(qr.text, timestamp, latitude, longitude);
+            }
+        }
+        function onEventStored(text, timestamp, latitude, longitude) {
+            onInform("[PASS] stored " + [text,timestamp,latitude, longitude].join(", "));
+            scanManager.listEvents();
+        }
+
+        function onEventListChanged(rows) {
+            onInform("[PASS] new list obtained " + rows.length);
+            console.log(rows, [].splice.call(rows.item,0));
+
+            function listColumns(item) {
+                return Object.keys(item).map(function(key) { return item[key]; });
+            }
+
+            function listKeys(item) {
+                return Object.keys(item);
+            }
+
+            var tr = [];
+            var first = rows.length - 1, last = Math.max(first - 5, 0);
+            for (var i = first; i > last; i--){
+                console.log(i, first, i === first);
+                var cols = (i === first ) ? listKeys(rows.item(i)) : listColumns(rows.item(i));
+                tr.push(["<tr><td>", cols.join("</td><td>"), "</td></tr>"].join(""));
+                console.log();
+            }
+
+            document.getElementById("table").innerHTML = ["<table>", tr.join("\n"), "</table>"].join("\n");
+
+        }
     },
 
-    scan: function() {
-        console.log('scanning');
-        
-        var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+    ScanManagerClass: function() {
+        var Class = {};
+        Class.instance = function() {
+            var instance = {}, on = {};
 
-        scanner.scan( function (result) { 
+            instance.callbacks = function(obj) {
+                var noAction = function() {};
+                "fault,inform,scanResult,eventStored,eventListChange".split(",").forEach(function(eventName) {
+                    on[eventName] = obj[eventName] || noAction;
+                });
+                return instance;
+            };
 
-            alert("We got a barcode\n" + 
-            "Result: " + result.text + "\n" + 
-            "Format: " + result.format + "\n" + 
-            "Cancelled: " + result.cancelled);  
+            instance.scan = function() {
+                if(window.cordova === undefined) { on.scanResult({text: "broccoli", format: "X"}); return; }
+                var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+                scanner.scan(on.scanResult, function() { on.fault("Scanning failed: "+ error); });
+            };
 
-           console.log("Scanner result: \n" +
-                "text: " + result.text + "\n" +
-                "format: " + result.format + "\n" +
-                "cancelled: " + result.cancelled + "\n");
-            document.getElementById("info").innerHTML = result.text;
-            console.log(result);
+            function openDB() {
+                return window.openDatabase("scans", "1.0", "Scans", 1000000);
+            }
+
+            function onTransactionFail(err) { on.fault("Error processing SQL: "+err.code); }
+
+            function init() {
+                openDB().transaction(function(tx) {
+                    // tx.executeSql('DROP TABLE IF EXISTS Events');
+                    tx.executeSql(
+                        'CREATE TABLE IF NOT EXISTS Events (id INTEGER PRIMARY KEY AUTOINCREMENT, eventtext TEXT NOT NULL, timestamp TEXT, latitude TEXT, longitude TEXT)',
+                        [],
+                        function(tx, results) { on.inform("Database initialized"); },
+                        function(err) { on.fault("Error processing SQL: "+err.code); }
+                    );
+                });
+            }
+            
+
+            instance.storeEvent = function(text, timestamp, latitude, longitude) {
+                openDB().transaction(function(tx) {
+                    tx.executeSql(
+                        'INSERT INTO Events (eventtext, timestamp, latitude, longitude) VALUES (?, ?, ?, ?)',
+                        [text, timestamp, latitude, longitude],
+                        function(tx, results) { on.eventStored(text, timestamp, latitude, longitude); },
+                        function(err) { on.fault("Error processing SQL: "+err.code); }
+                    );
+                });
+
+            };
+
+            instance.listEvents = function() {
+                openDB().transaction(function(tx) {
+                    tx.executeSql(
+                        'SELECT * from Events',
+                        [],
+                        function(tx, results) { on.eventListChange(results.rows); },
+                        function(err) { on.fault("Error processing SQL: "+err.code); }
+                    );
+                });
+            };
+
+
+            instance.exportEvents = function() {
+                openDB().transaction(function(tx) {
+                    tx.executeSql(
+                        'SELECT * from Events',
+                        [],
+                        function(tx, results) { 
+                         },
+                        function(err) { on.fault("Error processing SQL: "+err.code); }
+                    );
+                });
+            };
+
+
             /*
             if (args.format == "QR_CODE") {
                 window.plugins.childBrowser.showWebPage(args.text, { showLocationBar: false });
             }
             */
 
-        }, function (error) { 
-            console.log("Scanning failed: ", error); 
-        } );
-    },
+            instance.encode = function(qr) {
+                var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+                qr = {format: scanner.Encode.TEXT_TYPE, text: "http://www.nhl.com"};
 
-    encode: function() {
-        var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+                scanner.encode(qr.format, qr.text, function(success) {
+                    alert("encode success: " + success);
+                  }, function(fail) {
+                    alert("encoding failed: " + fail);
+                  }
+                );
+            };
 
-        scanner.encode(scanner.Encode.TEXT_TYPE, "http://www.nhl.com", function(success) {
-            alert("encode success: " + success);
-          }, function(fail) {
-            alert("encoding failed: " + fail);
-          }
-        );
+            init();
+            return instance;
+        };
+
+        return Class;
 
     }
+
 
 };

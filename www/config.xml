@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.example.codereader" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="com.widged.codereader" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>CodeReader</name>
     <description>
         Barcode scanner
     </description>
-    <author email="mlange@widged.com" href="http://phonegap.com">
+    <author email="support@phonegap.com" href="http://phonegap.com">
         Marielle Lange
     </author>
 
@@ -12,6 +12,10 @@
     <gap:plugin name="com.phonegap.plugins.barcodescanner" />
 
     <feature name="http://api.phonegap.com/1.0/device" />
+    <feature name="Geolocation">
+        <param name="android-package" value="org.apache.cordova.GeoBroker" />
+    </feature>
+    <access origin="*" />
 
     <preference name="phonegap-version" value="3.1.0" />
 
