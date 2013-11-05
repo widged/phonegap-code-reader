@@ -118,6 +118,30 @@ var app = {
             document.getElementById("table").innerHTML = ["<table>", tr.join("\n"), "</table>"].join("\n");
 
         }
+        function onEventListExport(rows) {
+            onInform("[PASS] new list obtained " + rows.length);
+            document.getElementById("capturable").innerHTML = "getting ready";
+            console.log(rows, [].splice.call(rows.item,0));
+
+            function listColumns(item) {
+                return Object.keys(item).map(function(key) { return item[key]; });
+            }
+
+            function listKeys(item) {
+                return Object.keys(item);
+            }
+
+            var tr = [];
+            var first = rows.length - 1, last = Math.max(first - 5, 0);
+            for (var i = first; i > last; i--){
+                console.log(i, first, i === first);
+                var cols = (i === first ) ? listKeys(rows.item(i)) : listColumns(rows.item(i));
+                tr.push(cols.join("\t"));
+            }
+
+            document.getElementById("capturable").innerHTML = tr.join("\n");
+
+        }
     },
 
     ScanManagerClass: function() {
@@ -183,11 +207,12 @@ var app = {
 
 
             instance.exportEvents = function() {
+                on.inform("export list")
                 openDB().transaction(function(tx) {
                     tx.executeSql(
                         'SELECT * from Events',
                         [],
-                        function(tx, results) { },
+                        function(tx, results) { on.inform("list exported"); on.eventListExport(results.rows);  },
                         function(err) { on.fault("Error processing SQL: "+err.code); }
                     );
                 });
