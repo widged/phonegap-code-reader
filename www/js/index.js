@@ -57,7 +57,7 @@ var app = {
 
         scanManager = this.ScanManagerClass().instance().callbacks(cbs);
         document.getElementById('scan').addEventListener('click', scanManager.scan, false);
-        document.getElementById('export').addEventListener('click', scanManager.export, false);
+        document.getElementById('export').addEventListener('click', scanManager.exportEvents, false);
 
         function onFault(message) {
             // alert(message);
@@ -140,7 +140,7 @@ var app = {
             };
 
             function openDB() {
-                return window.openDatabase("scans", "1.0", "Scans", 1000000);
+                return window.openDatabase("scans", "1.0", "Scans", 10000);
             }
 
             function onTransactionFail(err) { on.fault("Error processing SQL: "+err.code); }
@@ -187,8 +187,7 @@ var app = {
                     tx.executeSql(
                         'SELECT * from Events',
                         [],
-                        function(tx, results) { 
-                         },
+                        function(tx, results) { },
                         function(err) { on.fault("Error processing SQL: "+err.code); }
                     );
                 });
