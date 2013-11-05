@@ -34,7 +34,6 @@ var app = {
     // function, we must explicity call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
-
         // demo the scan
         console.log('about to scan');
         app.scan();
@@ -42,8 +41,8 @@ var app = {
     // Update DOM on a Received Event
     receivedEvent: function(id) {
         var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+        var listeningElement = parentElement.querySelector('.wait');
+        var receivedElement = parentElement.querySelector('.pass');
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
@@ -61,19 +60,19 @@ var app = {
     scan: function() {
 
         var parentElement = document.getElementById('codescanner');
-        var startElement = parentElement.querySelector('.start');
+        var waitElement = parentElement.querySelector('.wait');
         var passElement = parentElement.querySelector('.pass');
         var failElement = parentElement.querySelector('.fail');
         passElement.setAttribute('style', 'display:none;');
         failElement.setAttribute('style', 'display:none;');
 
-        startElement.setAttribute('style', 'display:block;');
+        waitElement.setAttribute('style', 'display:block;');
 
 
         console.log('scan(): init');
         cordova.plugins.barcodeScanner.scan(
               function (result) {
-                startElement.setAttribute('style', 'display:none;');
+                waitElement.setAttribute('style', 'display:none;');
                 passElement.setAttribute('style', 'display:block;');
                   alert("We got a barcode\n" +
                         "Result: " + result.text + "\n" +
@@ -81,7 +80,7 @@ var app = {
                         "Cancelled: " + result.cancelled);
               },
               function (error) {
-                startElement.setAttribute('style', 'display:none;');
+                waitElement.setAttribute('style', 'display:none;');
                 failElement.setAttribute('style', 'display:block;');
                   alert("Scanning failed: " + error);
               }

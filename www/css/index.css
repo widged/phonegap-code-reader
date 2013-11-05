@@ -87,12 +87,12 @@ h1 {
     padding:2px 0px;
 }
 
-.event.listening {
+.event.wait {
     background-color:#333333;
     display:block;
 }
 
-.event.received {
+.event.pass {
     background-color:#4B946A;
     display:none;
 }
