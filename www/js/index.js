@@ -71,9 +71,8 @@ var app = {
 
          function onScanResult(result) {
             var qr = result;
-            console.log(qr);
             // alert(["We got a barcode","Result: " + qr.text,"Format: " + qr.format, "Cancelled: " + qr.cancelled].join("\n"));
-            onInform(qr.text);
+            onInform("Scanned:", qr.text);
 
             onInform("about to get location");
 
@@ -164,7 +163,7 @@ var app = {
             };
 
             instance.scan = function() {
-                if(window.cordova === undefined) { on.scanResult({text: "broccoli", format: "X"}); return; }
+                /* if(window.cordova === undefined) { on.scanResult({text: "spinach", format: "X"}); return; } */
                 var scanner = cordova.require("cordova/plugin/BarcodeScanner");
                 scanner.scan(on.scanResult, function() { on.fault("Scanning failed: "+ error); });
             };
