@@ -59,16 +59,30 @@ var app = {
      *   this is different than the readme!
      */
     scan: function() {
-        
+
+        var parentElement = document.getElementById('codescanner');
+        var startElement = parentElement.querySelector('.start');
+        var passElement = parentElement.querySelector('.pass');
+        var failElement = parentElement.querySelector('.fail');
+        passElement.setAttribute('style', 'display:none;');
+        failElement.setAttribute('style', 'display:none;');
+
+        startElement.setAttribute('style', 'display:block;');
+
+
         console.log('scan(): init');
         cordova.plugins.barcodeScanner.scan(
               function (result) {
+                startElement.setAttribute('style', 'display:none;');
+                passElement.setAttribute('style', 'display:block;');
                   alert("We got a barcode\n" +
                         "Result: " + result.text + "\n" +
                         "Format: " + result.format + "\n" +
                         "Cancelled: " + result.cancelled);
               },
               function (error) {
+                startElement.setAttribute('style', 'display:none;');
+                failElement.setAttribute('style', 'display:block;');
                   alert("Scanning failed: " + error);
               }
            );
