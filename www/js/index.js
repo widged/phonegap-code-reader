@@ -183,6 +183,7 @@ var app = {
             
 
             instance.storeEvent = function(text, timestamp, latitude, longitude) {
+                on.inform("about to store")
                 openDB().transaction(function(tx) {
                     tx.executeSql(
                         'INSERT INTO Events (eventtext, timestamp, latitude, longitude) VALUES (?, ?, ?, ?)',
@@ -195,6 +196,7 @@ var app = {
             };
 
             instance.listEvents = function() {
+                on.inform("about to list")
                 openDB().transaction(function(tx) {
                     tx.executeSql(
                         'SELECT * from Events',
@@ -207,7 +209,7 @@ var app = {
 
 
             instance.exportEvents = function() {
-                on.inform("export list")
+                on.inform("about to export")
                 openDB().transaction(function(tx) {
                     tx.executeSql(
                         'SELECT * from Events',
