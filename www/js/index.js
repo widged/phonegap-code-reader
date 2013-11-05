@@ -24,25 +24,26 @@ var app = {
     // Bind Event Listeners
     //
     // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
+    // `load`, `deviceready`, `offline`, and `online`.
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
+        document.getElementById('scan').addEventListener('click', this.scan, false);
+        document.getElementById('encode').addEventListener('click', this.encode, false);
     },
+
     // deviceready Event Handler
     //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicity call 'app.receivedEvent(...);'
+    // The scope of `this` is the event. In order to call the `receivedEvent`
+    // function, we must explicity call `app.receivedEvent(...);`
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
-        // demo the scan
-        console.log('about to scan');
-        app.scan();
     },
+
     // Update DOM on a Received Event
     receivedEvent: function(id) {
         var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.wait');
-        var receivedElement = parentElement.querySelector('.pass');
+        var listeningElement = parentElement.querySelector('.listening');
+        var receivedElement = parentElement.querySelector('.received');
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
@@ -50,40 +51,45 @@ var app = {
         console.log('Received Event: ' + id);
     },
 
-    /**
-     * here is an example for scanning a barcode...
-     * obviously, your own JS logic <<here>>
-     *
-     * Note the require() method is called on window.cordova
-     *   this is different than the readme!
-     */
     scan: function() {
+        console.log('scanning');
+        
+        var scanner = cordova.require("cordova/plugin/BarcodeScanner");
 
-        var parentElement = document.getElementById('codescanner');
-        var waitElement = parentElement.querySelector('.wait');
-        var passElement = parentElement.querySelector('.pass');
-        var failElement = parentElement.querySelector('.fail');
-        passElement.setAttribute('style', 'display:none;');
-        failElement.setAttribute('style', 'display:none;');
+        scanner.scan( function (result) { 
 
-        waitElement.setAttribute('style', 'display:block;');
+            alert("We got a barcode\n" + 
+            "Result: " + result.text + "\n" + 
+            "Format: " + result.format + "\n" + 
+            "Cancelled: " + result.cancelled);  
 
+           console.log("Scanner result: \n" +
+                "text: " + result.text + "\n" +
+                "format: " + result.format + "\n" +
+                "cancelled: " + result.cancelled + "\n");
+            document.getElementById("info").innerHTML = result.text;
+            console.log(result);
+            /*
+            if (args.format == "QR_CODE") {
+                window.plugins.childBrowser.showWebPage(args.text, { showLocationBar: false });
+            }
+            */
 
-        console.log('scan(): init');
-        cordova.plugins.barcodeScanner.scan(
-              function (result) {
-                waitElement.setAttribute('style', 'display:none;');
-                passElement.setAttribute('style', 'display:block;');
-                  alert("We got a barcode\n" +
-                        "Result: " + result.text + "\n" +
-                        "Format: " + result.format + "\n" +
-                        "Cancelled: " + result.cancelled);
-              },
-              function (error) {
-                waitElement.setAttribute('style', 'display:none;');
-                failElement.setAttribute('style', 'display:block;');
-                  alert("Scanning failed: " + error);
-              }
-           );
+        }, function (error) { 
+            console.log("Scanning failed: ", error); 
+        } );
+    },
+
+    encode: function() {
+        var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+
+        scanner.encode(scanner.Encode.TEXT_TYPE, "http://www.nhl.com", function(success) {
+            alert("encode success: " + success);
+          }, function(fail) {
+            alert("encoding failed: " + fail);
+          }
+        );
+
     }
+
 };
