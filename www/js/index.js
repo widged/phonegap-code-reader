@@ -75,11 +75,15 @@ var app = {
             // alert(["We got a barcode","Result: " + qr.text,"Format: " + qr.format, "Cancelled: " + qr.cancelled].join("\n"));
             onInform(qr.text);
 
+            onInform("about to get location");
+
             navigator.geolocation.getCurrentPosition(
                 function(position) {
+                    onInform("Location: ", position.coords.latitude);
                     onLocationResult(position.coords.latitude, position.coords.longitude);
                 },
                 function(err) {
+                    onInform("Problem!");
                     onFault("Couldn't load the location");
                     onLocationResult("","");
                 }
