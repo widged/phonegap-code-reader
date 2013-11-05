@@ -52,7 +52,8 @@ var app = {
             inform: onInform,
             scanResult: onScanResult,
             eventStored: onEventStored,
-            eventListChange: onEventListChanged
+            eventListChange: onEventListChanged,
+            eventListExport: onEventListExport
         };
 
         scanManager = this.ScanManagerClass().instance().callbacks(cbs);
@@ -85,6 +86,7 @@ var app = {
             );
 
             function onLocationResult(latitude, longitude) {
+                onInform("Location: ", latitude, longitude);
                 var timestamp = Math.round((new Date()).getTime() / 1000); // unix timestamp, in seconds
                 scanManager.storeEvent(qr.text, timestamp, latitude, longitude);
             }
@@ -151,7 +153,7 @@ var app = {
 
             instance.callbacks = function(obj) {
                 var noAction = function() {};
-                "fault,inform,scanResult,eventStored,eventListChange".split(",").forEach(function(eventName) {
+                "fault,inform,scanResult,eventStored,eventListChange,eventListExport".split(",").forEach(function(eventName) {
                     on[eventName] = obj[eventName] || noAction;
                 });
                 return instance;
