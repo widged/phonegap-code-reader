@@ -179,7 +179,7 @@ var app = {
 
             function init() {
                 openDB().transaction(function(tx) {
-                    tx.executeSql('DROP TABLE IF EXISTS Events');
+                    /* tx.executeSql('DROP TABLE IF EXISTS Events'); */
                     tx.executeSql(
                         'CREATE TABLE IF NOT EXISTS Events (id INTEGER PRIMARY KEY AUTOINCREMENT, eventtext TEXT NOT NULL, timestamp TEXT, latitude TEXT, longitude TEXT)',
                         [],
