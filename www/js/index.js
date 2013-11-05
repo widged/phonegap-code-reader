@@ -75,7 +75,8 @@ var app = {
             onInform("Scanned:", qr.text);
 
             onInform("about to get location");
-
+            onLocationResult("","");
+/*
             navigator.geolocation.getCurrentPosition(
                 function(position) {
                     onInform("Location: ", position.coords.latitude);
@@ -87,6 +88,7 @@ var app = {
                     onLocationResult("","");
                 }
             );
+*/
 
             function onLocationResult(latitude, longitude) {
                 onInform("Location: ", latitude, longitude);
