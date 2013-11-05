@@ -166,7 +166,7 @@ var app = {
             };
 
             function openDB() {
-                return window.openDatabase("scans", "1.0", "Scans", 10000);
+                return window.openDatabase("scans", "1.0", "Scans", 1000000);
             }
 
             function onTransactionFail(err) { on.fault("Error processing SQL: "+err.code); }
