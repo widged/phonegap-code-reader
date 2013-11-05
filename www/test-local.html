@@ -27,16 +27,17 @@
     </head>
     <body>
         <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
+            <h1>Code Reader</h1>
+            <div id="deviceready">
                 <p class="event listening">Connecting to Device</p>
                 <p class="event received">Device is Ready</p>
             </div>
-            <p><a href="#" class="topcoat-button" id="scan">SCAN</a></p>
-            <p><a href="#" class="topcoat-button" id="export">EXPORT</a></p>
-            <p id="info"></p>
-            <div id="table"></div>
-            <textarea id="capturable">Try to copy and paste this text</textarea>
+            <div>
+                <p><button id="scan">SCAN</button>&nbsp;&nbsp;&nbsp;<button id="export">EXPORT</button></p>
+                <p id="info"></p>
+                <div id="table"></div>
+                <textarea id="capturable" rows="6">Try to copy and paste this text</textarea>
+            </div>
         </div>
         <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript">

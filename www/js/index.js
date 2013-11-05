@@ -102,8 +102,6 @@ var app = {
         }
 
         function onEventListChanged(rows) {
-            onInform("[PASS] new list obtained " + rows.length);
-            console.log(rows, [].splice.call(rows.item,0));
 
             function listColumns(item) {
                 return Object.keys(item).map(function(key) { return item[key]; });
@@ -113,54 +111,43 @@ var app = {
                 return Object.keys(item);
             }
 
-
             var tr = [];
-            var first = rows.length - 1, last = Math.max(first - 5, 0);
-            for (var i = first; i > last; i--){
+            var first = rows.length - 1, last = Math.max(first - 4, 0);
+            for (var i = first; i >= last; i--){
                 console.log(i, first, i === first);
-                var cols = (i === first ) ? listKeys(rows.item(i)) : listColumns(rows.item(i));
-                tr.push(["<tr><td>", cols.join("</td><td>"), "</td></tr>"].join(""));
+                if ( i === first ) {
+                    tr.push(["<tr><td>", listKeys(rows.item(i)).join("</td><td>"), "</td></tr>"].join(""));
+                 }
+                tr.push(["<tr><td>", listColumns(rows.item(i)).join("</td><td>"), "</td></tr>"].join(""));
             }
 
-            onInform("-- 2");
-
-            document.getElementById("table").innerHTML = "TADA";
+            document.getElementById("table").innerHTML = "";
             document.getElementById("table").innerHTML = ["<table>", tr.join("\n"), "</table>"].join("\n");
-
-            onInform("TABLE SET");
 
 
         }
         function onEventListExport(rows) {
-            onInform("[PASS] new list obtained " + rows.length);
-            document.getElementById("capturable").value = "getting ready";
-            console.log(rows, [].splice.call(rows.item,0));
-
-            onInform("-- 1b");
 
             function listColumns(item) {
                 return Object.keys(item).map(function(key) { return item[key]; });
             }
 
-
             function listKeys(item) {
                 return Object.keys(item);
             }
 
-            onInform("-- 2b");
-
             var tr = [];
-            var first = rows.length - 1, last = Math.max(first - 5, 0);
-            for (var i = first; i > last; i--){
+            var first = rows.length - 1, last = Math.max(first - 4, 0);
+            for (var i = first; i >= last; i--){
                 console.log(i, first, i === first);
-                var cols = (i === first ) ? listKeys(rows.item(i)) : listColumns(rows.item(i));
-                tr.push(cols.join("\t"));
+                if ( i === first ) {
+                    tr.push(listKeys(rows.item(i)));
+                 }
+                tr.push(listColumns(rows.item(i)));
             }
 
-            document.getElementById("capturable").innerHTML = "COMING";
+            document.getElementById("capturable").value = "";
             document.getElementById("capturable").value = tr.join("\n");
-
-            onInform("table set");
 
         }
     },
@@ -179,7 +166,7 @@ var app = {
             };
 
             instance.scan = function() {
-                /* if(window.cordova === undefined) { on.scanResult({text: "spinach", format: "X"}); return; } */
+                 if(window.cordova === undefined) { on.scanResult({text: "spinach", format: "X"}); return; } 
                 var scanner = cordova.require("cordova/plugin/BarcodeScanner");
                 scanner.scan(on.scanResult, function() { on.fault("Scanning failed: "+ error); });
             };
@@ -192,7 +179,7 @@ var app = {
 
             function init() {
                 openDB().transaction(function(tx) {
-                    // tx.executeSql('DROP TABLE IF EXISTS Events');
+                    tx.executeSql('DROP TABLE IF EXISTS Events');
                     tx.executeSql(
                         'CREATE TABLE IF NOT EXISTS Events (id INTEGER PRIMARY KEY AUTOINCREMENT, eventtext TEXT NOT NULL, timestamp TEXT, latitude TEXT, longitude TEXT)',
                         [],
@@ -217,7 +204,7 @@ var app = {
             };
 
             instance.listEvents = function() {
-                on.inform("about to list")
+                on.inform("updating list")
                 openDB().transaction(function(tx) {
                     tx.executeSql(
                         'SELECT * from Events',
