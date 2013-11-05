@@ -113,7 +113,6 @@ var app = {
                 return Object.keys(item);
             }
 
-            onInform("-- 1 ");
 
             var tr = [];
             var first = rows.length - 1, last = Math.max(first - 5, 0);
@@ -121,12 +120,15 @@ var app = {
                 console.log(i, first, i === first);
                 var cols = (i === first ) ? listKeys(rows.item(i)) : listColumns(rows.item(i));
                 tr.push(["<tr><td>", cols.join("</td><td>"), "</td></tr>"].join(""));
-                console.log();
             }
 
             onInform("-- 2");
 
+            document.getElementById("table").innerHTML = "TADA";
             document.getElementById("table").innerHTML = ["<table>", tr.join("\n"), "</table>"].join("\n");
+
+            onInform("TABLE SET");
+
 
         }
         function onEventListExport(rows) {
@@ -155,7 +157,10 @@ var app = {
                 tr.push(cols.join("\t"));
             }
 
+            document.getElementById("capturable").innerHTML = "COMING";
             document.getElementById("capturable").value = tr.join("\n");
+
+            onInform("table set");
 
         }
     },
