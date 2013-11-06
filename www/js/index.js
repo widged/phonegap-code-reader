@@ -77,6 +77,7 @@ var app = {
             onInform("about to get location");
 
 
+
             navigator.geolocation.getCurrentPosition(
                 function(position) {
                     onInform("Location: ", position.coords.latitude);
@@ -86,7 +87,12 @@ var app = {
                     onInform("Problem!");
                     onFault("Couldn't load the location");
                     onLocationResult("","");
-                }
+                },
+                {
+                  enableHighAccuracy: true,
+                  timeout: 5000,
+                  maximumAge: 0
+                }                
             );
 
 
@@ -137,7 +143,7 @@ var app = {
             }
 
             var tr = [];
-            var first = rows.length - 1, last = Math.max(first - 4, 0);
+            var first = rows.length - 1, last = 0;
             for (var i = first; i >= last; i--){
                 console.log(i, first, i === first);
                 if ( i === first ) {
