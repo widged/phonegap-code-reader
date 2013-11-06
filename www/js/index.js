@@ -64,43 +64,48 @@ var app = {
             // alert(message);
             onInform("[ERROR]" + message);
         }
-        function onInform(message) {
+        function onInform() {
+            var args = [].splice.call(arguments,0);
+            var message = args.join("\t");
             document.getElementById("info").innerHTML = message;
             console.log(message);
         }
 
-         function onScanResult(result) {
-            var qr = result;
-            // alert(["We got a barcode","Result: " + qr.text,"Format: " + qr.format, "Cancelled: " + qr.cancelled].join("\n"));
-            onInform("Scanned:", qr.text);
+        function onScanResult(result) {
+        var qr = result;
+        // alert(["We got a barcode","Result: " + qr.text,"Format: " + qr.format, "Cancelled: " + qr.cancelled].join("\n"));
+        onInform("Scanned:", qr.text);
 
-            onInform("about to get location");
+        onInform("about to get location");
 
-
-
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    onInform("Location: ", position.coords.latitude);
-                    onLocationResult(position.coords.latitude, position.coords.longitude);
-                },
-                function(err) {
-                    onInform("Problem!");
-                    onFault("Couldn't load the location");
-                    onLocationResult("","");
-                },
-                {
-                  enableHighAccuracy: true,
-                  timeout: 5000,
-                  maximumAge: 0
-                }                
-            );
-
-
-            function onLocationResult(latitude, longitude) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                latitude = (latitude * 10000) + 413330;
+                longitude = (longitude * 10000) - 1748200;
                 onInform("Location: ", latitude, longitude);
-                var timestamp = Math.round((new Date()).getTime() / 1000); // unix timestamp, in seconds
-                scanManager.storeEvent(qr.text, timestamp, latitude, longitude);
+                onLocationResult(latitude, longitude);
+            },
+            function(err) {
+                onInform("Problem!");
+                onFault("Couldn't load the location");
+                onLocationResult("","");
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 3000,
+              maximumAge: 100
             }
+        );
+
+
+        function onLocationResult(latitude, longitude) {
+            onInform("Location: ", latitude, longitude);
+            var timestamp = Math.round((new Date()).getTime() / 1000); // unix timestamp, in seconds
+            scanManager.storeEvent(qr.text, timestamp, latitude, longitude);
+        }
+
         }
         function onEventStored(text, timestamp, latitude, longitude) {
             onInform("[PASS] stored " + [text,timestamp,latitude, longitude].join(", "));
@@ -108,6 +113,8 @@ var app = {
         }
 
         function onEventListChanged(rows) {
+            onEventListExport(rows);
+            return;
 
             function listColumns(item) {
                 return Object.keys(item).map(function(key) { return item[key]; });
@@ -156,6 +163,8 @@ var app = {
             document.getElementById("capturable").value = tr.join("\n");
 
         }
+
+
     },
 
     ScanManagerClass: function() {
@@ -185,11 +194,13 @@ var app = {
 
             function init() {
                 openDB().transaction(function(tx) {
-                    /* tx.executeSql('DROP TABLE IF EXISTS Events'); */
+                    /* 
+                    tx.executeSql('DROP TABLE IF EXISTS Events'); 
+                    */
                     tx.executeSql(
                         'CREATE TABLE IF NOT EXISTS Events (id INTEGER PRIMARY KEY AUTOINCREMENT, eventtext TEXT NOT NULL, timestamp TEXT, latitude TEXT, longitude TEXT)',
                         [],
-                        function(tx, results) { on.inform("Database initialized"); },
+                        function(tx, results) { on.inform("Database initialized");  },
                         function(err) { on.fault("Error processing SQL: "+err.code); }
                     );
                 });
